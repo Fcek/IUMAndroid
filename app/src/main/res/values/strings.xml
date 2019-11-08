@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">IUMAndroid</string>
+    <string name="LoginHint">Email</string>
+    <string name="PwdHint">Password</string>
+</resources>
