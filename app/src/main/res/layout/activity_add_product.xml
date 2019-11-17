@@ -4,54 +4,60 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+    tools:context=".AddProductActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="top"
-        android:orientation="vertical"
-        android:paddingTop="40dp">
+        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/AppName"
+            android:id="@+id/appName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
+            android:paddingTop="40dp"
             android:text="@string/app_name"
             android:textSize="36sp" />
 
         <EditText
-            android:id="@+id/login"
+            android:id="@+id/aManu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="@string/LoginHint"
-            android:inputType="textEmailAddress" />
+            android:hint="Manufacturer"
+            android:inputType="textPersonName" />
 
         <EditText
-            android:id="@+id/pwd"
+            android:id="@+id/aModel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="@string/PwdHint"
-            android:inputType="textPassword" />
+            android:hint="Model"
+            android:inputType="textPersonName" />
 
-        <Button
-            android:id="@+id/loginbtn"
+        <EditText
+            android:id="@+id/aPrice"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Login" />
+            android:ems="10"
+            android:hint="Price"
+            android:inputType="numberDecimal" />
 
-        <com.google.android.gms.common.SignInButton
-            android:id="@+id/sign_in_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/registerbtn"
+        <EditText
+            android:id="@+id/aQuantity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Register" />
+            android:ems="10"
+            android:hint="Quantity"
+            android:inputType="numberSigned" />
+
+        <Button
+            android:id="@+id/addbtn1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Product" />
+
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

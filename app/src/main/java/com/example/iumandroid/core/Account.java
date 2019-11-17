@@ -9,6 +9,16 @@ public class Account {
     private String email;
     @JsonProperty("password")
     private String password;
+    @JsonProperty("role")
+    private String role;
+    @JsonProperty("role")
+    public String getRole() {
+        return role;
+    }
+    @JsonProperty("role")
+    public void setRole(String role) {
+        this.role = role;
+    }
     @JsonProperty("id")
     public Integer getId() {
         return id;

@@ -2,4 +2,6 @@
     <string name="app_name">IUMAndroid</string>
     <string name="LoginHint">Email</string>
     <string name="PwdHint">Password</string>
+    <string name="server_client_id">906890859746-9iavesjt2dve9irplpt5hg31m859ekkk.apps.googleusercontent.com</string>
+    <string name="url">http://10.0.2.2:9090/</string>
 </resources>

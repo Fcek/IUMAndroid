@@ -55,13 +55,14 @@ public class RegisterActivity extends AppCompatActivity{
                     Account account = new Account();
                     account.setEmail(emailText);
                     account.setPassword(Hash.md5(pwdText));
+                    account.setRole("client");
 
                     Call<Account> call = apiService.createAccount(account);
                     call.enqueue(new Callback<Account>() {
                         @Override
                         public void onResponse(Call<Account> call, Response<Account> response) {
                             Toast.makeText(getApplicationContext(),"Created", Toast.LENGTH_SHORT).show();
-                            startActivity ( new Intent(RegisterActivity.this, MainActivity.class) );
+                            finish();
                         }
 
                         @Override
