@@ -77,6 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 intent.putExtra("role", response.body().getRole());
                                 startActivity(intent);
+                                finish();
                             } else {
                                 Toast.makeText(getApplicationContext(),"Wrong Password, try again...", Toast.LENGTH_SHORT).show();
                             }
@@ -148,6 +149,7 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.putExtra("role", "client");
                     startActivity(intent);
+                    finish();
                 }
 
                 @Override
