@@ -10,6 +10,8 @@ import android.widget.Toast;
 import com.example.iumandroid.core.Product;
 import com.example.iumandroid.services.ApiService;
 
+import java.util.Date;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -53,6 +55,8 @@ public class AddProductActivity extends AppCompatActivity {
                 newProduct.setName(String.valueOf(model.getText()));
                 newProduct.setAmount(Integer.valueOf(quantity.getText().toString()));
                 newProduct.setPrice(Float.valueOf(price.getText().toString()));
+                newProduct.setUpdated(new Date());
+                newProduct.setCreated(new Date());
                 Call<Product> call = apiService.createProduct(newProduct);
                 call.enqueue(new Callback<Product>() {
                     @Override
@@ -64,6 +68,7 @@ public class AddProductActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<Product> call, Throwable t) {
                         Toast.makeText(getApplicationContext(),"Something went wrong", Toast.LENGTH_SHORT).show();
+                        //TODO: MAKE IT ADD TO DATABASE WHEN OFFLINE
                     }
                 });
             }

@@ -2,7 +2,14 @@ package com.example.iumandroid;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.database.AbstractCursor;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,9 +20,11 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.iumandroid.core.Product;
+import com.example.iumandroid.db.MyDbHandler;
 import com.example.iumandroid.services.ApiService;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -24,6 +33,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import com.example.iumandroid.wrapper.Wrapper;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -45,8 +55,13 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         return retrofit;
     }
-    boolean created = false;
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         Retrofit retrofit = initRetrofit();
         apiService = retrofit.create(ApiService.class);
 
+        final MyDbHandler dbHelper = new MyDbHandler(this);
+
         final Spinner products = findViewById(R.id.products);
         final EditText manufacturer = findViewById(R.id.pManu);
         final EditText model = findViewById(R.id.pModel);
@@ -66,25 +83,46 @@ public class MainActivity extends AppCompatActivity {
         Button remove = findViewById(R.id.removebtn);
         final List<Product> allProducts = new ArrayList<>();
         final List<String> productsString = new ArrayList<>();
-        created = true;
 
+        final SQLiteDatabase dbr = dbHelper.getReadableDatabase();
+        final SQLiteDatabase dbw = dbHelper.getWritableDatabase();
 
         final Call<List<Product>> productListCall = apiService.getAllProducts();
         productListCall.enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                 allProducts.addAll(response.body());
+
+                dbw.execSQL("DROP TABLE products");
+                dbw.execSQL("CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "manufacturer TEXT, name TEXT, price REAL, amount INTEGER, " +
+                        "created INTEGER, updated INTEGER, serverid INTEGER)");
+                ContentValues cvProduct = new ContentValues();
                 for (Product p : allProducts) {
+                    cvProduct = Wrapper.cvProduct(p);
+                    dbw.insert("products", null, cvProduct);
                     productsString.add(p.toString());
+
                 }
                 ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_spinner_item,productsString);
                 arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 products.setAdapter(arrayAdapter);
+                Cursor cursor = dbr.query("products", null, null, null, null, null, "id DESC");
+                final List itemIds = new ArrayList<>();
+                while (cursor.moveToNext()) {
+                    String role = cursor.getString(
+                            cursor.getColumnIndexOrThrow("name")
+                    );
+                    System.out.println(role);
+                }
+                cursor.close();
             }
 
             @Override
             public void onFailure(Call<List<Product>> call, Throwable t) {
                 Toast.makeText(getApplicationContext(),"Can't connect to the server", Toast.LENGTH_SHORT).show();
+                //TODO: MAKE IT WORK OFFLINE
+
             }
         });
 
@@ -116,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
                 final Product selected = allProducts.get(products.getSelectedItemPosition());
                 System.out.println(Integer.valueOf(number.getText().toString()));
                 selected.setAmount(selected.getAmount() + (Integer.valueOf(number.getText().toString())));
+                selected.setUpdated(new Date());
                 Call<Product> call = apiService.updateProduct(selected);
                 call.enqueue(new Callback<Product>() {
                     @Override
@@ -138,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 final Product selected = allProducts.get(products.getSelectedItemPosition());
                 if(selected.getAmount() - (Integer.valueOf(number.getText().toString())) >= 0){
                     selected.setAmount(selected.getAmount() - (Integer.valueOf(number.getText().toString())));
+                    selected.setUpdated(new Date());
                     Call<Product> call = apiService.updateProduct(selected);
                     call.enqueue(new Callback<Product>() {
                         @Override
@@ -163,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
                 selected.setName(String.valueOf(model.getText()));
                 selected.setAmount(Integer.valueOf(quantity.getText().toString()));
                 selected.setPrice(Float.valueOf(price.getText().toString()));
+                selected.setUpdated(new Date());
                 Call<Product> call = apiService.updateProduct(selected);
                 call.enqueue(new Callback<Product>() {
                     @Override

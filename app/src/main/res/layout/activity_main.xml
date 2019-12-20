@@ -125,5 +125,11 @@
             android:layout_height="wrap_content"
             android:text="Refresh" />
 
+        <Button
+            android:id="@+id/updateall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update All" />
+
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

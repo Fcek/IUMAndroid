@@ -2,6 +2,8 @@ package com.example.iumandroid.core;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Date;
+
 public class Product {
 
     @JsonProperty("id")
@@ -14,6 +16,20 @@ public class Product {
     private float price;
     @JsonProperty("amount")
     private int amount;
+    @JsonProperty("created")
+    Date created;
+    @JsonProperty("updated")
+    Date updated;
+
+    int serverId;
+
+    public int getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(int serverId) {
+        this.serverId = serverId;
+    }
 
     public long getId() {
         return id;
@@ -53,6 +69,22 @@ public class Product {
 
     public void setAmount(int amount) {
         this.amount = amount;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public Date getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(Date updated) {
+        this.updated = updated;
     }
 
     @Override
