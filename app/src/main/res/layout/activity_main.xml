@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:paddingTop="40dp"
+            android:paddingTop="30dp"
             android:text="@string/app_name"
             android:textSize="36sp" />
 
@@ -126,10 +126,10 @@
             android:text="Refresh" />
 
         <Button
-            android:id="@+id/updateall"
+            android:id="@+id/updateserver"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Update All" />
+            android:text="Update with server" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

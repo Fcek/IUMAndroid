@@ -99,7 +99,10 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
-
+        ContentValues values = new ContentValues();
+        values.put("role", "client");
+        values.put("logged", 0);
+        db.update("currentuser", values, "id=1", null);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.server_client_id))
@@ -120,7 +123,6 @@ public class LoginActivity extends AppCompatActivity {
                             if (response.body().getPassword().equals(Hash.md5(pwdText))) {
                                 Toast.makeText(getApplicationContext(), "Logged Successfully", Toast.LENGTH_SHORT).show();
                                 //startActivity ( new Intent(LoginActivity.this, MainActivity.class) );
-                                //TODO: TEST IT
                                 ContentValues values = new ContentValues();
                                 values.put("role", response.body().getRole());
                                 values.put("logged", 1);

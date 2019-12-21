@@ -2,6 +2,7 @@ package com.example.iumandroid.services;
 
 import com.example.iumandroid.core.Account;
 import com.example.iumandroid.core.Product;
+import com.example.iumandroid.core.Synchronize;
 
 import java.util.List;
 
@@ -36,6 +37,9 @@ public interface ApiService {
 
     @PUT("update/product")
     Call<Product> updateProduct(@Body Product product);
+
+    @PUT("update")
+    Call<Synchronize> updateAll(@Body Synchronize synchronize);
 
     @DELETE("delete/product")
     Call<Product> deleteProduct(@Query("q") int id);

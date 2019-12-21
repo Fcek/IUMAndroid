@@ -20,7 +20,7 @@ public class Product {
     Date created;
     @JsonProperty("updated")
     Date updated;
-
+    @JsonProperty("serverid")
     int serverId;
 
     public int getServerId() {
