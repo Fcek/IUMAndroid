@@ -26,6 +26,7 @@ import com.example.iumandroid.services.ApiService;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -61,8 +62,20 @@ public class MainActivity extends AppCompatActivity {
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+    final List<Integer> deleted = new ArrayList<>();
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        savedInstanceState.putIntegerArrayList("deleted", (ArrayList<Integer>) deleted);
+        // etc.
+    }
+
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final String role = (String) getIntent().getExtras().get("role");
@@ -82,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
         Button update2Server = findViewById(R.id.updateserver);
         final List<String> productsString = new ArrayList<>();
         final List<Product> allProducts = new ArrayList<>();
-        final List<Integer> deleted = new ArrayList<>();
 
         final SQLiteDatabase dbr = dbHelper.getReadableDatabase();
         final SQLiteDatabase dbw = dbHelper.getWritableDatabase();
@@ -96,24 +108,34 @@ public class MainActivity extends AppCompatActivity {
                dbw.execSQL("DROP TABLE products");
                dbw.execSQL("CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                        "manufacturer TEXT, name TEXT, price REAL, amount INTEGER, " +
-                       "created INTEGER, updated INTEGER, serverid INTEGER)");
+                       "created INTEGER, updated INTEGER, serverid INTEGER, count INTEGER)");
+               dbw.execSQL("DROP TABLE ssid");
+               dbw.execSQL("CREATE TABLE ssid (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                       "ssid INTEGER)");
+               ContentValues cvssid = new ContentValues();
+               cvssid.put("ssid", String.valueOf(new Random().nextInt()));
+               dbw.insert("ssid", null, cvssid);
                ContentValues cvProduct;
                for (Product p : allProducts) {
                    cvProduct = Wrapper.product2Cv(p);
+                   cvProduct.put("serverid", p.getId());
+                   cvProduct.put("count", 0);
                    dbw.insert("products", null, cvProduct);
                    productsString.add(p.toString());
                }
+               System.out.println(response.raw().code());
+               System.out.println(response.code());
                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this,android.R.layout.simple_spinner_item,productsString);
                arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                products.setAdapter(arrayAdapter);
                Cursor cursor = dbr.query("products", null, null, null, null, null, "id DESC");
-               final List itemIds = new ArrayList<>();
-               while (cursor.moveToNext()) {
-                   String role = cursor.getString(
-                           cursor.getColumnIndexOrThrow("name")
-                   );
-                   System.out.println(role);
-               }
+//               final List itemIds = new ArrayList<>();
+//               while (cursor.moveToNext()) {
+//                   String role = cursor.getString(
+//                           cursor.getColumnIndexOrThrow("name")
+//                   );
+//                   System.out.println(role);
+//               }
                cursor.close();
            }
 
@@ -121,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
            public void onFailure(Call<List<Product>> call, Throwable t) {
                Toast.makeText(getApplicationContext(),"Can't connect to the server", Toast.LENGTH_SHORT).show();
                Cursor cursor = dbr.query("products", null, null, null, null, null, "id DESC");
-               List<Product> allProductsOffline = Wrapper.cv2Product(cursor);
+               List<Product> allProductsOffline = Wrapper.cv2ProductOffline(cursor);
                allProducts.addAll(allProductsOffline);
                for (Product p : allProducts) {
                    productsString.add(p.toString());
@@ -172,7 +194,19 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<Product> call, Throwable t) {
                         Toast.makeText(getApplicationContext(),"No connection", Toast.LENGTH_SHORT).show();
-                        dbw.update("products", Wrapper.product2Cv(selected), "id = " + selected.getId(), null);
+                        System.out.println("id " + selected.getId());
+                        String[] columns = {"count"};
+                        Cursor cursor = dbr.query("products", columns  , "id = "+selected.getId(), null, null, null, "id DESC");
+                        int count = 0;
+                        while (cursor.moveToNext()) {
+                            System.out.println("count "+cursor.getInt(cursor.getColumnIndexOrThrow("count")));
+                            count = cursor.getInt(cursor.getColumnIndexOrThrow("count"));
+                        }
+                        ContentValues cv = Wrapper.product2Cv(selected);
+                        cv.put("serverid", selected.getId());
+                        count = count + (Integer.valueOf(number.getText().toString()));
+                        cv.put("count", count);
+                        dbw.update("products", cv, "id = " + selected.getId(), null);
                         quantity.setText(String.valueOf(selected.getAmount()));
                     }
                 });
@@ -197,7 +231,18 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onFailure(Call<Product> call, Throwable t) {
                             Toast.makeText(getApplicationContext(),"Something went wrong", Toast.LENGTH_SHORT).show();
-                            dbw.update("products", Wrapper.product2Cv(selected), "id = " + selected.getId(), null);
+                            String[] columns = {"count"};
+                            Cursor cursor = dbr.query("products", columns  , "id = "+selected.getId(), null, null, null, "id DESC");
+                            int count = 0;
+                            while (cursor.moveToNext()) {
+                                System.out.println("count "+cursor.getInt(cursor.getColumnIndexOrThrow("count")));
+                                count = cursor.getInt(cursor.getColumnIndexOrThrow("count"));
+                            }
+                            ContentValues cv = Wrapper.product2Cv(selected);
+                            cv.put("serverid", selected.getId());
+                            count = count - (Integer.valueOf(number.getText().toString()));
+                            cv.put("count", count);
+                            dbw.update("products", cv, "id = " + selected.getId(), null);
                             quantity.setText(String.valueOf(selected.getAmount()));
                         }
                     });
@@ -219,16 +264,21 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<Product> call, Response<Product> response) {
                         Toast.makeText(getApplicationContext(),"Updated", Toast.LENGTH_SHORT).show();
+                        recreate();
                     }
 
                     @Override
                     public void onFailure(Call<Product> call, Throwable t) {
                         Toast.makeText(getApplicationContext(),"Something went wrong", Toast.LENGTH_SHORT).show();
-                        dbw.update("products", Wrapper.product2Cv(selected), "id = " + selected.getId(), null);
+                        ContentValues cv = Wrapper.product2Cv(selected);
+                        cv.put("serverid", selected.getServerId());
+                        dbw.update("products", cv, "id = " + selected.getId(), null);
                     }
                 });
             }
         });
+
+
 
         findViewById(R.id.addbtn).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -252,9 +302,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<Product> call, Throwable t) {
                         Toast.makeText(getApplicationContext(),"Removed offline", Toast.LENGTH_SHORT).show();
-                        deleted.add((int) allProducts.get(products.getSelectedItemPosition()).getId());
+                        deleted.add((int) allProducts.get(products.getSelectedItemPosition()).getServerId());
+                        savedInstanceState.putIntegerArrayList("deleted", (ArrayList<Integer>) deleted);
                         dbw.delete("products", "id = " + (int) allProducts.get(products.getSelectedItemPosition()).getId(), null);
-                        recreate();;
                     }
                 });
             }
@@ -293,17 +343,26 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(isNetworkAvailable()){
                     Cursor cursor = dbr.query("products", null, null, null, null, null, "id DESC");
-                    List<Product> allProductsOffline = Wrapper.cv2Product(cursor);
+                    String[] selectionArgs = {"1"};
+                    Cursor ssidCursor = dbr.query("ssid", null, "id = ?", selectionArgs, null, null, "id DESC");
+                    List<Product> allProductsOffline = Wrapper.cv2ProductOffline(cursor);
                     Synchronize synchronize = new Synchronize();
-                    synchronize.setDeleted(deleted);
+                    try {
+                        synchronize.setDeleted(savedInstanceState.getIntegerArrayList("deleted"));
+                    } catch (NullPointerException e){
+                        System.out.println(e);
+                        synchronize.setDeleted(null);
+                    }
+
                     synchronize.setProductList(allProductsOffline);
+                    while(ssidCursor.moveToNext()){
+                        synchronize.setSsid(ssidCursor.getInt(ssidCursor.getColumnIndexOrThrow("ssid")));
+                    }
                     Call<Synchronize> call = apiService.updateAll(synchronize);
                     call.enqueue(new Callback<Synchronize>() {
                         @Override
                         public void onResponse(Call<Synchronize> call, Response<Synchronize> response) {
-                            if(response.code() == 200){
-                                Toast.makeText(getApplicationContext(),"Synchronized successfully", Toast.LENGTH_SHORT).show();
-                            }
+                            Toast.makeText(getApplicationContext(),"Synchronized successfully", Toast.LENGTH_SHORT).show();
                             recreate();
                         }
 

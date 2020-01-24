@@ -12,6 +12,17 @@ public class Synchronize {
     @JsonProperty("deleted")
     private List<Integer> deleted;
 
+    @JsonProperty("ssid")
+    private int ssid;
+
+    public int getSsid() {
+        return ssid;
+    }
+
+    public void setSsid(int ssid) {
+        this.ssid = ssid;
+    }
+
     public List<Product> getProductList() {
         return productList;
     }

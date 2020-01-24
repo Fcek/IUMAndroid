@@ -77,6 +77,7 @@ public class AddProductActivity extends AppCompatActivity {
 
                 if(!isNetworkAvailable()){
                     ContentValues cvProduct = Wrapper.product2Cv(newProduct);
+                    cvProduct.put("serverid", "");
                     dbw.insert("products", null, cvProduct);
                     Toast.makeText(getApplicationContext(),"Created", Toast.LENGTH_SHORT).show();
                     finish();

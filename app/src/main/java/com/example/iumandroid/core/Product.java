@@ -22,6 +22,16 @@ public class Product {
     Date updated;
     @JsonProperty("serverid")
     int serverId;
+    @JsonProperty("count")
+    private int count;
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
 
     public int getServerId() {
         return serverId;

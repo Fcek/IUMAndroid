@@ -131,7 +131,6 @@ public class LoginActivity extends AppCompatActivity {
                                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                 intent.putExtra("role", response.body().getRole());
                                 startActivity(intent);
-                                db.close();
                                 finish();
                             } else {
                                 Toast.makeText(getApplicationContext(), "Wrong Password, try again...", Toast.LENGTH_SHORT).show();
@@ -212,7 +211,6 @@ public class LoginActivity extends AppCompatActivity {
                     values.put("role", "client");
                     values.put("logged", 1);
                     db.update("currentuser", values, "id=1", null);
-                    db.close();
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.putExtra("role", "client");
                     startActivity(intent);
